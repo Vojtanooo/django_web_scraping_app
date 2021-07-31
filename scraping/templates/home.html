@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <title>Scraping app</title>
+    <style>
+        .input-field label {
+            color: #000 !important;
+        }
+        .input-field input[type=text]:focus + label {
+            color: #000 !important;
+        }
+        .input-field input[type=text]:focus {
+            border-bottom: 1px solid #000 !important;
+            box-shadow: 0 1px 0 0 #000 !important;
+        }
+        .checkbox-field span {
+            color :#000;
+        } 
+        .checkbox-field {
+            margin-top: 5px;
+            margin-bottom: 5px;
+        }
+        .btn-large {
+            margin-top: 20px;
+        }
+        .input-field {
+            margin-top: 25px;
+            margin-left: 45px;
+        }
+        .browser-default {
+            background-color: #ede7f6;
+            border: 0px !important;
+        }
+        .browser-default:focus {
+            outline: none !important;
+        }
+        .checkbox-purple[type="checkbox"].filled-in:checked+span:not(.lever):after {
+            border: 2px solid #7e57c2;
+            background-color: #7e57c2;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- HLAVIČKA -->
+    <nav>
+        <div class="nav-wrapper deep-purple lighten-1">
+            <div class="container">
+                <a href="{% url "home" %}" class="brand-logo">Find your new home</a>
+            </div>
+        </div>
+    </nav>
+    <!-- POPIS JAK FUNGUJE STRÁNKA -->
+    <div class="container" style="margin-top: 30px;">
+        <div class="row">
+            <div class="col s4">
+                <div class="center promo promo-example">
+                    <i class="large material-icons">add_location</i>
+                    <h5 class="promo-caption">Vyberte si lokaci</h5>
+                    <p class="light center">Po zadání PSČ si můžete vybrat lokaci kde chcete stavět, bydlet nebo koupit dům.</p>
+                </div>    
+            </div>
+                
+            <div class="col s4">
+                <div class="center promo promo-example">
+                    <i class="large material-icons">home</i>
+                    <h5 class="promo-caption">Zadejte co hledáte</h5>
+                    <p class="light center">Můžete si vybrat mezi Domem, Pozemkem, Bytem</p>
+                </div>     
+            </div>
+            <div class="col s4">
+                <div class="center promo promo-example">
+                    <i class="large material-icons">desktop_windows</i>
+                    <h5 class="promo-caption">Najděte nejlepší nabídku!</h5>
+                    <p class="light center">Zobrazí se nabídky s různých inzertních serveru. Stačí si jen vybrat tu nejlepší!</p>
+                </div>  
+            </div>
+        </div>
+    </div>
+    <!-- OKNO S VYHLEDÁVÁNÍM -->
+    <div class="container deep-purple lighten-5 z-depth-3">
+        <form action="POST" class="row">
+            <div class="col s3">
+                <div class="input-field">
+                    <input id="input_text" type="text" required maxlength="5" pattern="[0-9]{5}" >
+                    <label for="input_text">Zadej PSČ</label>
+                </div>
+            </div>
+            <div class="col s3">
+                <div class="input-field">
+                    <select class="browser-default">
+                        <option value="0" disabled selected>Hledat v okolí</option>
+                        <option value="0">0 km</option>
+                        <option value="2">2 km</option>
+                        <option value="5">5 km</option>
+                        <option value="10">10 km</option>
+                        <option value="15">15 km</option>
+                        <option value="15">25 km</option>
+                    </select>
+                </div>
+            </div>
+            <div class="col s3">
+                <div class="checkbox-field">
+                    <label>
+                    <input type="checkbox" class="filled-in checkbox-purple"/>
+                    <span>Stavební pozemek</span>
+                    </label>
+                </div>
+                <div class="checkbox-field">
+                    <label>
+                    <input type="checkbox" class="filled-in checkbox-purple"/>
+                    <span>Dům</span>
+                    </label>
+                </div>
+                <div class="checkbox-field">
+                    <label>
+                    <input type="checkbox" class="filled-in checkbox-purple"/>
+                    <span>Byt</span>
+                    </label>
+                </div>
+            </div>
+            <div class="col s3">
+                <button class="waves-effect waves-light btn-large deep-purple lighten-1" type="submit" name="action">Hledej
+                    <i class="material-icons left">search</i>
+                </button>
+            </div>
+        </form>
+    </div>
+    <!-- ZOBRAZENÍ CO SE VYHLEDÁVÁ -->
+    <div class="container row">
+        <div class="col s12"><h4>Pozemky na prodej Babice +10km</h4></div>
+    <!-- ZOBRASENÍ OBSAHU VYHLEDÁVÁNÍ -->
+        <div class="col s4">
+            <div class="card hoverable">
+                <div class="card-image">
+                   <img src="https://www.designmag.cz/foto/2019/09/tiny-house-done-5.jpg">
+                   <a class="btn-floating halfway-fab waves-effect waves-light deep-purple lighten-1 btn-medium"><i class="material-icons">description</i></a>
+                </div>
+            <div class="card-content">
+                <h6 class="text-darken-4">Prodej domu Uherské hradiště 215m2 pozemek 1200m2</h6>
+            </div>
+            </div>
+        </div>
+
+        <div class="col s4">
+            <div class="card hoverable">
+                <div class="card-image">
+                   <img src="https://www.designmag.cz/foto/2019/09/tiny-house-done-5.jpg">
+                   <a class="btn-floating halfway-fab waves-effect waves-light deep-purple lighten-1 btn-medium"><i class="material-icons">description</i></a>
+                </div>
+            <div class="card-content">
+                <h6 class="text-darken-4">Prodej domu Uherské hradiště 215m2 pozemek 1200m2</h6>
+            </div>
+            </div>
+        </div>
+
+        <div class="col s4">
+            <div class="card hoverable">
+                <div class="card-image">
+                   <img src="https://www.designmag.cz/foto/2019/09/tiny-house-done-5.jpg">
+                   <a class="btn-floating halfway-fab waves-effect waves-light deep-purple lighten-1 btn-medium"><i class="material-icons">description</i></a>
+                </div>
+            <div class="card-content">
+                <h6 class="text-darken-4">Prodej domu Uherské hradiště 215m2 pozemek 1200m2</h6>
+            </div>
+            </div>
+        </div>
+        <!-- STRÁNKOVÁNÍ OBSAHU -->
+        <ul class="pagination col s12 center-align">
+            <li class="disabled"><a href="#!"><i class="material-icons">chevron_left</i></a></li>
+            <li class="active"><a href="#!">1</a></li>
+            <li class="waves-effect"><a href="#!">2</a></li>
+            <li class="waves-effect"><a href="#!">3</a></li>
+            <li class="waves-effect"><a href="#!">4</a></li>
+            <li class="waves-effect"><a href="#!">5</a></li>
+            <li class="waves-effect"><a href="#!"><i class="material-icons">chevron_right</i></a></li>
+          </ul>
+    </div>
+
+</body>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+</html>
