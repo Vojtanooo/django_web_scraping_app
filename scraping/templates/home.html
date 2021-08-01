@@ -85,45 +85,45 @@
     </div>
     <!-- OKNO S VYHLEDÁVÁNÍM -->
     <div class="container deep-purple lighten-5 z-depth-3">
-        <form action="POST" class="row">
+        <form method="POST" class="row">
+            {% csrf_token %}
             <div class="col s3">
                 <div class="input-field">
-                    <input id="input_text" type="text" required maxlength="5" pattern="[0-9]{5}" >
+                    <input id="input_text" type="text" required maxlength="5" pattern="[0-9]{5}" name="psc">
                     <label for="input_text">Zadej PSČ</label>
                 </div>
             </div>
             <div class="col s3">
                 <div class="input-field">
-                    <select class="browser-default">
+                    <select class="browser-default" id="select_field" name="select_field">
                         <option value="0" disabled selected>Hledat v okolí</option>
-                        <option value="0">0 km</option>
-                        <option value="2">2 km</option>
+                        <option value="0,5">0,5 km</option>
+                        <option value="1">1 km</option>
                         <option value="5">5 km</option>
                         <option value="10">10 km</option>
-                        <option value="15">15 km</option>
-                        <option value="15">25 km</option>
+                        <option value="20">20 km</option>
                     </select>
                 </div>
             </div>
             <div class="col s3">
-                <div class="checkbox-field">
+                <p>
                     <label>
-                    <input type="checkbox" class="filled-in checkbox-purple"/>
-                    <span>Stavební pozemek</span>
+                        <input type="radio" name="group1" value="land" checked/>
+                        <span>Stavební pozemek</span>
                     </label>
-                </div>
-                <div class="checkbox-field">
+                </p>
+                <p>
                     <label>
-                    <input type="checkbox" class="filled-in checkbox-purple"/>
-                    <span>Dům</span>
+                        <input type="radio" name="group1" value="house"/>
+                        <span>Dům</span>
                     </label>
-                </div>
-                <div class="checkbox-field">
+                </p>
+                <p>
                     <label>
-                    <input type="checkbox" class="filled-in checkbox-purple"/>
-                    <span>Byt</span>
+                        <input type="radio" name="group1" value="flat"/>
+                        <span>Byt</span>
                     </label>
-                </div>
+                </p>
             </div>
             <div class="col s3">
                 <button class="waves-effect waves-light btn-large deep-purple lighten-1" type="submit" name="action">Hledej
@@ -134,8 +134,25 @@
     </div>
     <!-- ZOBRAZENÍ CO SE VYHLEDÁVÁ -->
     <div class="container row">
-        <div class="col s12"><h4>Pozemky na prodej Babice +10km</h4></div>
-    <!-- ZOBRASENÍ OBSAHU VYHLEDÁVÁNÍ -->
+    {% if request.method == "POST" %}
+        {% if distance == None %}
+            <div class="col s12"><h4>{{ choice }} na prodej {{ village_name }}</h4></div>
+        {% else %}
+            <div class="col s12"><h4>{{ choice }} na prodej {{ village_name }} +{{ distance }}km</h4></div>
+        {% endif %}
+            <!-- ZOBRASENÍ OBSAHU VYHLEDÁVÁNÍ -->
+        <div class="col s4">
+            <div class="card hoverable">
+                <div class="card-image">
+                   <img src="https://www.designmag.cz/foto/2019/09/tiny-house-done-5.jpg">
+                   <a class="btn-floating halfway-fab waves-effect waves-light deep-purple lighten-1 btn-medium"><i class="material-icons">description</i></a>
+                </div>
+            <div class="card-content">
+                <h6 class="text-darken-4">Prodej domu Uherské hradiště 215m2 pozemek 1200m2</h6>
+            </div>
+            </div>
+        </div>
+    
         <div class="col s4">
             <div class="card hoverable">
                 <div class="card-image">
@@ -159,18 +176,7 @@
             </div>
             </div>
         </div>
-
-        <div class="col s4">
-            <div class="card hoverable">
-                <div class="card-image">
-                   <img src="https://www.designmag.cz/foto/2019/09/tiny-house-done-5.jpg">
-                   <a class="btn-floating halfway-fab waves-effect waves-light deep-purple lighten-1 btn-medium"><i class="material-icons">description</i></a>
-                </div>
-            <div class="card-content">
-                <h6 class="text-darken-4">Prodej domu Uherské hradiště 215m2 pozemek 1200m2</h6>
-            </div>
-            </div>
-        </div>
+        {% endif %}
         <!-- STRÁNKOVÁNÍ OBSAHU -->
         <ul class="pagination col s12 center-align">
             <li class="disabled"><a href="#!"><i class="material-icons">chevron_left</i></a></li>
