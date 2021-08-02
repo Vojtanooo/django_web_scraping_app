@@ -97,11 +97,11 @@
                 <div class="input-field">
                     <select class="browser-default" id="select_field" name="select_field">
                         <option value="0" disabled selected>Hledat v okolí</option>
-                        <option value="0,5">0,5 km</option>
-                        <option value="1">1 km</option>
-                        <option value="5">5 km</option>
-                        <option value="10">10 km</option>
-                        <option value="20">20 km</option>
+                        <option value="1">0,5 km</option>
+                        <option value="2">1 km</option>
+                        <option value="3">5 km</option>
+                        <option value="4">10 km</option>
+                        <option value="5">20 km</option>
                     </select>
                 </div>
             </div>
@@ -134,49 +134,42 @@
     </div>
     <!-- ZOBRAZENÍ CO SE VYHLEDÁVÁ -->
     <div class="container row">
+        {% if messages %}
+            <div class="col s12 center-align red lighten-1 z-depth-3">
+                {% for message in messages %}
+                    <h5>{{ message }}</h5>
+                {% endfor %}
+            </div>
+        {% endif %}
     {% if request.method == "POST" %}
         {% if distance == None %}
-            <div class="col s12"><h4>{{ choice }} na prodej {{ village_name }}</h4></div>
+            <div class="col s12">
+                <h4>{{ choice }} na prodej {{ village_name }}</h4>
+                <p>{{ search_results }} inzerátů</p>
+            </div>
         {% else %}
-            <div class="col s12"><h4>{{ choice }} na prodej {{ village_name }} +{{ distance }}km</h4></div>
+            <div class="col s12">
+                <h4>{{ choice }} na prodej {{ village_name }} +{{ distance }}km</h4>
+                <p>{{ search_results }} inzerátů</p>
+            </div>
+
         {% endif %}
             <!-- ZOBRASENÍ OBSAHU VYHLEDÁVÁNÍ -->
-        <div class="col s4">
-            <div class="card hoverable">
-                <div class="card-image">
-                   <img src="https://www.designmag.cz/foto/2019/09/tiny-house-done-5.jpg">
-                   <a class="btn-floating halfway-fab waves-effect waves-light deep-purple lighten-1 btn-medium"><i class="material-icons">description</i></a>
+        {% for scrape in scrape_list %}
+            <div class="col s4">
+                <div class="card hoverable">
+                    <div class="card-image">
+                    <img src="{{ scrape.img_url }}">
+                    <a class="btn-floating halfway-fab waves-effect waves-light deep-purple lighten-1 btn-medium" href="{{ scrape.url }}" target="_blank" rel="noopener noreferrer"><i class="material-icons">description</i></a>
+                    </div>
+                <div class="card-content">
+                    <h6 class="text-darken-4">{{ scrape.info }}</h6>
+                    <p style="margin-top: 25px;">{{ scrape.price }}</p>
                 </div>
-            <div class="card-content">
-                <h6 class="text-darken-4">Prodej domu Uherské hradiště 215m2 pozemek 1200m2</h6>
-            </div>
-            </div>
-        </div>
-    
-        <div class="col s4">
-            <div class="card hoverable">
-                <div class="card-image">
-                   <img src="https://www.designmag.cz/foto/2019/09/tiny-house-done-5.jpg">
-                   <a class="btn-floating halfway-fab waves-effect waves-light deep-purple lighten-1 btn-medium"><i class="material-icons">description</i></a>
                 </div>
-            <div class="card-content">
-                <h6 class="text-darken-4">Prodej domu Uherské hradiště 215m2 pozemek 1200m2</h6>
             </div>
-            </div>
-        </div>
-
-        <div class="col s4">
-            <div class="card hoverable">
-                <div class="card-image">
-                   <img src="https://www.designmag.cz/foto/2019/09/tiny-house-done-5.jpg">
-                   <a class="btn-floating halfway-fab waves-effect waves-light deep-purple lighten-1 btn-medium"><i class="material-icons">description</i></a>
-                </div>
-            <div class="card-content">
-                <h6 class="text-darken-4">Prodej domu Uherské hradiště 215m2 pozemek 1200m2</h6>
-            </div>
-            </div>
-        </div>
-        {% endif %}
+        {% endfor %}            
+    {% endif %}
         <!-- STRÁNKOVÁNÍ OBSAHU -->
         <ul class="pagination col s12 center-align">
             <li class="disabled"><a href="#!"><i class="material-icons">chevron_left</i></a></li>

@@ -1,6 +1,9 @@
 from django.shortcuts import redirect, render
+from django.contrib import messages
 import requests
 from bs4 import BeautifulSoup
+from unidecode import unidecode
+from .models import Search
 
 
 def home(request):
@@ -9,20 +12,89 @@ def home(request):
         distance = request.POST.get("select_field")
         choice = request.POST.get("group1")
 
-        if choice == "land":
-            choice = "Pozemky"
-        elif choice == "house":
-            choice = "Domy"
-        else:
-            choice = "Byty"
+        if distance == None:
+            distance = "0"
+            distance_to_html = None
+        elif distance == "1":
+            distance_to_html = "0,5"
+        elif distance == "2":
+            distance_to_html = "1"
+        elif distance == "3":
+            distance_to_html = "5"
+        elif distance == "4":
+            distance_to_html = "10"
+        elif distance == "5":
+            distance_to_html = "20"
 
         psc_url = f"https://www.psc.cz/{psc}/"
         session = requests.Session().get(psc_url).text
         html = BeautifulSoup(session, "html.parser")
-        village_name = html.find(
-            "div", class_="psc-text").h1.text.split(",")[1]
-        
+        if html.find("div", class_="psc-text").h1.text == "":
+            messages.error(request, f"Nesprávně zadané PSČ!")
+            return redirect("home")
+        else:
+            village_name = html.find(
+                "div", class_="psc-text").h1.text.split(",")[1]
 
-        return render(request, "home.html", {"village_name": village_name, "distance": distance, "choice": choice})
+        if " u " in village_name:
+            raw_village_name = village_name.split(" u ")[0].lower().strip(" ")
+        else:
+            raw_village_name = unidecode(village_name).strip(
+                " ").replace(" ", "-").lower()
+
+        district = html.findAll("span", itemprop="name")[2].text
+        district_unidecode = unidecode(district).replace(" ", "-").lower()
+        district_for_search = raw_village_name + "-" + district_unidecode
+
+        if choice == "land":
+            choice = "Pozemky"
+            idnes_url = f"https://reality.idnes.cz/s/prodej/pozemky/stavebni-pozemek/{district_for_search}/?s-rd={distance}"
+        elif choice == "house":
+            choice = "Domy"
+            idnes_url = f"https://reality.idnes.cz/s/prodej/domy/{district_for_search}/?s-rd={distance}"
+        else:
+            choice = "Byty"
+            idnes_url = f"https://reality.idnes.cz/s/prodej/byty/{district_for_search}/?s-rd={distance}"
+
+        idnes_session = requests.Session().get(idnes_url).text
+        idnes_html = BeautifulSoup(idnes_session, "html.parser")
+
+        pages_list = []
+        pages_list.append(idnes_url)
+
+        if idnes_html.find("div", id="snippet-s-result-paginator-"):
+            other_pages = idnes_html.find(
+                "div", id="snippet-s-result-paginator-")
+            other_pages = other_pages.findAll(
+                "a", class_="btn btn--border paging__item")
+
+            for scrap_page in other_pages:
+                page = scrap_page.get("href", "")
+                pages_list.append(f"https://reality.idnes.cz{page}")
+
+        scrape_list = []
+        for page in pages_list:
+            idnes_session = requests.Session().get(page).text
+            idnes_html = BeautifulSoup(idnes_session, "html.parser")
+            idnes_scrape = idnes_html.findAll(
+                "div", class_="c-products__inner")
+            for scrape in idnes_scrape:
+                price = scrape.find("strong").text
+                img_url = scrape.find("img").get("data-src", "")
+                info = scrape.find("img").get("alt", "")
+                url = scrape.find("a").get("href", "")
+                scrape_dict = {
+                    "price": price,
+                    "img_url": img_url,
+                    "info": info,
+                    "url": url
+                }
+                scrape_list.append(scrape_dict)
+        search_results = len(scrape_list)
+
+        Search.objects.create(
+            psc=psc, distance=distance_to_html, choice=choice)
+
+        return render(request, "home.html", {"village_name": village_name, "distance": distance_to_html, "choice": choice, "scrape_list": scrape_list, "search_results": search_results})
 
     return render(request, "home.html")
