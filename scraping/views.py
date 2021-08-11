@@ -1,7 +1,9 @@
 from django.shortcuts import redirect, render
+from django.core.paginator import Paginator
 from django.contrib import messages
 import requests
 from bs4 import BeautifulSoup
+from requests.sessions import session
 from unidecode import unidecode
 from .models import Search
 
@@ -14,17 +16,17 @@ def home(request):
 
         if distance == None:
             distance = "0"
-            distance_to_html = None
+            distance_to_html = "+0km"
         elif distance == "1":
-            distance_to_html = "0,5"
+            distance_to_html = "+0,5km"
         elif distance == "2":
-            distance_to_html = "1"
+            distance_to_html = "+1km"
         elif distance == "3":
-            distance_to_html = "5"
+            distance_to_html = "+5km"
         elif distance == "4":
-            distance_to_html = "10"
+            distance_to_html = "+10km"
         elif distance == "5":
-            distance_to_html = "20"
+            distance_to_html = "+20km"
 
         psc_url = f"https://www.psc.cz/{psc}/"
         session = requests.Session().get(psc_url).text
@@ -47,13 +49,13 @@ def home(request):
         district_for_search = raw_village_name + "-" + district_unidecode
 
         if choice == "land":
-            choice = "Pozemky"
+            choice = "Pozemky na prodej "
             idnes_url = f"https://reality.idnes.cz/s/prodej/pozemky/stavebni-pozemek/{district_for_search}/?s-rd={distance}"
         elif choice == "house":
-            choice = "Domy"
+            choice = "Domy na prodej "
             idnes_url = f"https://reality.idnes.cz/s/prodej/domy/{district_for_search}/?s-rd={distance}"
         else:
-            choice = "Byty"
+            choice = "Byty na prodej "
             idnes_url = f"https://reality.idnes.cz/s/prodej/byty/{district_for_search}/?s-rd={distance}"
 
         idnes_session = requests.Session().get(idnes_url).text
@@ -90,11 +92,50 @@ def home(request):
                     "url": url
                 }
                 scrape_list.append(scrape_dict)
-        search_results = len(scrape_list)
+        search_results = f"{len(scrape_list)} inzerátů"
+
+        if len(scrape_list) == 0:
+            messages.error(request, "Žádné reality v oblasti!")
+
+        paginator = Paginator(scrape_list, 12)
+        page_num = request.GET.get("page", 1)
+        page = paginator.page(page_num)
+
+        request.session["pagination"] = scrape_list
+        request.session["distance"] = distance_to_html
+        request.session["village_name"] = village_name
+        request.session["choice"] = choice
+        request.session["search_results"] = search_results
 
         Search.objects.create(
             psc=psc, distance=distance_to_html, choice=choice)
 
-        return render(request, "home.html", {"village_name": village_name, "distance": distance_to_html, "choice": choice, "scrape_list": scrape_list, "search_results": search_results})
+        return render(request, "home.html", {
+            "village_name": village_name,
+            "distance": distance_to_html,
+            "choice": choice,
+            "scrape_list": page,
+            "search_results": search_results,
+            "page_obj": page
+        })
 
+    if request.method == "GET":
+        if "pagination" in request.session:
+            paginator = Paginator(request.session.get("pagination"), 12)
+            page_num = request.GET.get("page", 1)
+            page = paginator.page(page_num)
+
+            return render(request, "home.html", {
+                "village_name": request.session.get("village_name"),
+                "distance": request.session.get("distance"),
+                "choice": request.session.get("choice"),
+                "scrape_list": page,
+                "search_results": request.session.get("search_results"),
+                "page_obj": page
+            })
+    return render(request, "home.html")
+
+
+def delete_session(request):
+    request.session.flush()
     return render(request, "home.html")

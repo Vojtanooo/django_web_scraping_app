@@ -1,3 +1,4 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 
@@ -5,46 +6,10 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="{% static "scraping/style.css" %}" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <title>Scraping app</title>
-    <style>
-        .input-field label {
-            color: #000 !important;
-        }
-        .input-field input[type=text]:focus + label {
-            color: #000 !important;
-        }
-        .input-field input[type=text]:focus {
-            border-bottom: 1px solid #000 !important;
-            box-shadow: 0 1px 0 0 #000 !important;
-        }
-        .checkbox-field span {
-            color :#000;
-        } 
-        .checkbox-field {
-            margin-top: 5px;
-            margin-bottom: 5px;
-        }
-        .btn-large {
-            margin-top: 20px;
-        }
-        .input-field {
-            margin-top: 25px;
-            margin-left: 45px;
-        }
-        .browser-default {
-            background-color: #ede7f6;
-            border: 0px !important;
-        }
-        .browser-default:focus {
-            outline: none !important;
-        }
-        .checkbox-purple[type="checkbox"].filled-in:checked+span:not(.lever):after {
-            border: 2px solid #7e57c2;
-            background-color: #7e57c2;
-        }
-    </style>
 </head>
 
 <body>
@@ -52,7 +17,10 @@
     <nav>
         <div class="nav-wrapper deep-purple lighten-1">
             <div class="container">
-                <a href="{% url "home" %}" class="brand-logo">Find your new home</a>
+                <a href="{% url "delete-session" %}" class="brand-logo">
+                    <i class="large material-icons left">location_city</i>
+                    Find your new home
+                </a>
             </div>
         </div>
     </nav>
@@ -78,14 +46,14 @@
                 <div class="center promo promo-example">
                     <i class="large material-icons">desktop_windows</i>
                     <h5 class="promo-caption">Najděte nejlepší nabídku!</h5>
-                    <p class="light center">Zobrazí se nabídky s různých inzertních serveru. Stačí si jen vybrat tu nejlepší!</p>
+                    <p class="light center">Zobrazí se nabídky z různých inzertních serveru. Stačí si jen vybrat tu nejlepší!</p>
                 </div>  
             </div>
         </div>
     </div>
     <!-- OKNO S VYHLEDÁVÁNÍM -->
     <div class="container deep-purple lighten-5 z-depth-3">
-        <form method="POST" class="row">
+        <form method="POST" class="row" action="/search/?page=1">
             {% csrf_token %}
             <div class="col s3">
                 <div class="input-field">
@@ -126,7 +94,7 @@
                 </p>
             </div>
             <div class="col s3">
-                <button class="waves-effect waves-light btn-large deep-purple lighten-1" type="submit" name="action">Hledej
+                <button class="waves-effect waves-light btn-large deep-purple lighten-1" type="submit" name="submit">Hledej
                     <i class="material-icons left">search</i>
                 </button>
             </div>
@@ -140,48 +108,61 @@
                     <h5>{{ message }}</h5>
                 {% endfor %}
             </div>
-        {% endif %}
-    {% if request.method == "POST" %}
-        {% if distance == None %}
-            <div class="col s12">
-                <h4>{{ choice }} na prodej {{ village_name }}</h4>
-                <p>{{ search_results }} inzerátů</p>
-            </div>
         {% else %}
-            <div class="col s12">
-                <h4>{{ choice }} na prodej {{ village_name }} +{{ distance }}km</h4>
-                <p>{{ search_results }} inzerátů</p>
-            </div>
-
-        {% endif %}
-            <!-- ZOBRASENÍ OBSAHU VYHLEDÁVÁNÍ -->
-        {% for scrape in scrape_list %}
-            <div class="col s4">
-                <div class="card hoverable">
-                    <div class="card-image">
-                    <img src="{{ scrape.img_url }}">
-                    <a class="btn-floating halfway-fab waves-effect waves-light deep-purple lighten-1 btn-medium" href="{{ scrape.url }}" target="_blank" rel="noopener noreferrer"><i class="material-icons">description</i></a>
+            {% if request.method == "POST" or request.method == "GET" %}
+                {% if distance == "0" %}
+                    <div class="col s12">
+                        <h4>{{ choice }}{{ village_name }}</h4>
+                        <p>{{ search_results }}</p>
                     </div>
-                <div class="card-content">
-                    <h6 class="text-darken-4">{{ scrape.info }}</h6>
-                    <p style="margin-top: 25px;">{{ scrape.price }}</p>
-                </div>
-                </div>
-            </div>
-        {% endfor %}            
-    {% endif %}
-        <!-- STRÁNKOVÁNÍ OBSAHU -->
-        <ul class="pagination col s12 center-align">
-            <li class="disabled"><a href="#!"><i class="material-icons">chevron_left</i></a></li>
-            <li class="active"><a href="#!">1</a></li>
-            <li class="waves-effect"><a href="#!">2</a></li>
-            <li class="waves-effect"><a href="#!">3</a></li>
-            <li class="waves-effect"><a href="#!">4</a></li>
-            <li class="waves-effect"><a href="#!">5</a></li>
-            <li class="waves-effect"><a href="#!"><i class="material-icons">chevron_right</i></a></li>
-          </ul>
-    </div>
+                {% else %}
+                    <div class="col s12">
+                        <h4>{{ choice }}{{ village_name }} {{ distance }}</h4>
+                        <p>{{ search_results }}</p>
+                    </div>
+                {% endif %}
+            <!-- ZOBRASENÍ OBSAHU VYHLEDÁVÁNÍ -->
+                {% for scrape in scrape_list %}
+                    <div class="col s4">
+                        <div class="card hoverable">
+                            <div class="card-image">
+                            <img src="{{ scrape.img_url }}">
+                            <a class="btn-floating halfway-fab waves-effect waves-light deep-purple lighten-1 btn-medium" href="{{ scrape.url }}" target="_blank" rel="noopener noreferrer"><i class="material-icons">description</i></a>
+                            </div>
+                        <div class="card-content">
+                            <h6 class="truncate text-darken-4">{{ scrape.info }}</h6>
+                            <p style="margin-top: 25px;">{{ scrape.price }}</p>
+                        </div>
+                        </div>
+                    </div>
+                {% endfor %}        
+                <!-- STRÁNKOVÁNÍ OBSAHU -->
+                <ul class="pagination col s12 center-align">
+                {% if page_obj.has_other_pages %}
+                    {% if page_obj.has_previous %}
+                        <li class="waves-effect"><a href="?page={{ page_obj.previous_page_number }}"><i class="material-icons">chevron_left</i></a></li>
+                    {% else %}
+                        <li class="disabled"><a href="#!"><i class="material-icons">chevron_left</i></a></li>
+                    {% endif %}
 
+                    {% for num in page_obj.paginator.page_range %}
+                        {% if page_obj.number == num %}
+                            <li class="active"><a href="?page={{ num }}">{{ num }}</a></li>
+                        {% elif num > page_obj.number|add:"-5" and num < page_obj.number|add:"5" %}
+                            <li class="waves-effect"><a href="?page={{ num }}">{{ num }}</a></li>
+                        {% endif %}
+                    {% endfor %}
+
+                    {% if page_obj.has_next %}
+                        <li class="waves-effect"><a href="?page={{ page_obj.next_page_number }}"><i class="material-icons">chevron_right</i></a></li>
+                    {% else %}
+                        <li class="disabled"><a href="#!"><i class="material-icons">chevron_right</i></a></li>
+                    {% endif %}
+                {% endif %}
+                </ul>
+            {% endif %}
+        {% endif %}        
+    </div>
 </body>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
