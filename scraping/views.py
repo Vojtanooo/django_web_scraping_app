@@ -6,6 +6,7 @@ from bs4 import BeautifulSoup
 from requests.sessions import session
 from unidecode import unidecode
 from .models import Search
+from .scrape_data import bazos_data
 
 
 def home(request):
@@ -54,9 +55,11 @@ def home(request):
         elif choice == "house":
             choice = "Domy na prodej "
             idnes_url = f"https://reality.idnes.cz/s/prodej/domy/{district_for_search}/?s-rd={distance}"
+            bazos_url = f"https://reality.bazos.cz/prodam/dum/?hlokalita={psc}&humkreis={distance}"
         else:
             choice = "Byty na prodej "
             idnes_url = f"https://reality.idnes.cz/s/prodej/byty/{district_for_search}/?s-rd={distance}"
+            bazos_url = f"https://reality.bazos.cz/prodam/byt/?hlokalita={psc}&humkreis={distance}"
 
         idnes_session = requests.Session().get(idnes_url).text
         idnes_html = BeautifulSoup(idnes_session, "html.parser")
@@ -92,6 +95,8 @@ def home(request):
                     "url": url
                 }
                 scrape_list.append(scrape_dict)
+        scrape_list.extend(bazos_data(psc, distance))
+
         search_results = f"{len(scrape_list)} inzerátů"
 
         if len(scrape_list) == 0:
@@ -119,7 +124,7 @@ def home(request):
             "page_obj": page
         })
 
-    if request.method == "GET":
+    elif request.method == "GET":
         if "pagination" in request.session:
             paginator = Paginator(request.session.get("pagination"), 12)
             page_num = request.GET.get("page", 1)
