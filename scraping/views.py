@@ -6,7 +6,7 @@ from bs4 import BeautifulSoup
 from requests.sessions import session
 from unidecode import unidecode
 from .models import Search
-from .scrape_data import bazos_data
+from .scrape_data import bazos_data, idnes_data
 
 
 def home(request):
@@ -18,8 +18,6 @@ def home(request):
         if distance == None:
             distance = "0"
             distance_to_html = "+0km"
-        elif distance == "1":
-            distance_to_html = "+0,5km"
         elif distance == "2":
             distance_to_html = "+1km"
         elif distance == "3":
@@ -28,6 +26,8 @@ def home(request):
             distance_to_html = "+10km"
         elif distance == "5":
             distance_to_html = "+20km"
+
+        distance_bazos = distance_to_html.strip("+ km")
 
         psc_url = f"https://www.psc.cz/{psc}/"
         session = requests.Session().get(psc_url).text
@@ -52,50 +52,19 @@ def home(request):
         if choice == "land":
             choice = "Pozemky na prodej "
             idnes_url = f"https://reality.idnes.cz/s/prodej/pozemky/stavebni-pozemek/{district_for_search}/?s-rd={distance}"
+            bazos_url = f"https://reality.bazos.cz/prodam/pozemek/?hlokalita={psc}&humkreis={distance_bazos}"
         elif choice == "house":
             choice = "Domy na prodej "
             idnes_url = f"https://reality.idnes.cz/s/prodej/domy/{district_for_search}/?s-rd={distance}"
-            bazos_url = f"https://reality.bazos.cz/prodam/dum/?hlokalita={psc}&humkreis={distance}"
+            bazos_url = f"https://reality.bazos.cz/prodam/dum/?hlokalita={psc}&humkreis={distance_bazos}"
         else:
             choice = "Byty na prodej "
             idnes_url = f"https://reality.idnes.cz/s/prodej/byty/{district_for_search}/?s-rd={distance}"
-            bazos_url = f"https://reality.bazos.cz/prodam/byt/?hlokalita={psc}&humkreis={distance}"
-
-        idnes_session = requests.Session().get(idnes_url).text
-        idnes_html = BeautifulSoup(idnes_session, "html.parser")
-
-        pages_list = []
-        pages_list.append(idnes_url)
-
-        if idnes_html.find("div", id="snippet-s-result-paginator-"):
-            other_pages = idnes_html.find(
-                "div", id="snippet-s-result-paginator-")
-            other_pages = other_pages.findAll(
-                "a", class_="btn btn--border paging__item")
-
-            for scrap_page in other_pages:
-                page = scrap_page.get("href", "")
-                pages_list.append(f"https://reality.idnes.cz{page}")
+            bazos_url = f"https://reality.bazos.cz/prodam/byt/?hlokalita={psc}&humkreis={distance_bazos}"
 
         scrape_list = []
-        for page in pages_list:
-            idnes_session = requests.Session().get(page).text
-            idnes_html = BeautifulSoup(idnes_session, "html.parser")
-            idnes_scrape = idnes_html.findAll(
-                "div", class_="c-products__inner")
-            for scrape in idnes_scrape:
-                price = scrape.find("strong").text
-                img_url = scrape.find("img").get("data-src", "")
-                info = scrape.find("img").get("alt", "")
-                url = scrape.find("a").get("href", "")
-                scrape_dict = {
-                    "price": price,
-                    "img_url": img_url,
-                    "info": info,
-                    "url": url
-                }
-                scrape_list.append(scrape_dict)
-        scrape_list.extend(bazos_data(psc, distance))
+        scrape_list.extend(idnes_data(idnes_url))
+        scrape_list.extend(bazos_data(bazos_url))
 
         search_results = f"{len(scrape_list)} inzerátů"
 
