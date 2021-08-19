@@ -57,7 +57,7 @@ def bazos_data(scrape_url):
         scrape_dict = {
             "price": price,
             "img_url": img_url,
-            "info": info,
+            "info": info + " " + description,
             "url": f"https://reality.bazos.cz{url}"
         }
         scrape_list.append(scrape_dict)
