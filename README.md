@@ -13,4 +13,4 @@ Create a virtualenv with `virtualenv env` and install dependencies with `pip ins
 
 # Preview
 
-![Imgur](https://i.imgur.com/nLqw8uw.gif)
+![Imgur](https://i.imgur.com/LSTuqJt.gif)
